@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 // import routes
-const userRoutes = require("./routes/user");
+const authRoutes = require("./routes/auth");
 
 // app
 const app = express();
@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cookieParser()); // Parse Cookie header and populate req.cookies with an object keyed by the cookie names.
 
 // routes middleware
-app.use("/api", userRoutes);
+app.use("/api", authRoutes);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
