@@ -39,28 +39,44 @@ exports.signup = async (req, res) => {
 };
 
 exports.signin = async (req, res) => {
-  // find the user based on email
-  const { email, password } = req.body;
-  const user = await User.findOne({ email }).select("+hashed_password");
-  if (!user) {
-    return res.status(401).json({
-      error: "User with that email does not exist. Please signup",
+  try {
+    const { email, password } = req.body;
+
+    // Ensure email is in lowercase
+    const normalizedEmail = email.toLowerCase();
+
+    // Find user in the database by email
+    const user = await User.findOne({ email: normalizedEmail });
+
+    // If user not found, return error
+    if (!user) {
+      return res.status(400).json({
+        error: "User with that email does not exist. Please sign up.",
+      });
+    }
+
+    // If password does not match, return error
+    if (!user.authenticate(password)) {
+      return res
+        .status(401)
+        .json({ error: "Email and password do not match." });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+    // Set token in cookie for future requests
+    res.cookie("t", token, { expire: new Date() + 9999 });
+
+    // Omit sensitive fields from user object
+    const { _id, name, role } = user;
+    // Respond with token and user details (excluding sensitive fields)
+    res.json({ token, user: { _id, email: normalizedEmail, name, role } });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: errorHandler(err),
     });
   }
-  // if the user is found make sure email and password matches
-  // create authenticate method in user model
-  if (!user.authenticate(password)) {
-    return res.status(401).json({
-      error: "Email and password do not match",
-    });
-  }
-  // generate a signed token with user id and secret
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-  // persist the token as 't' in cookie with expiration date
-  res.cookie("t", token, { expire: new Date() + 9999 });
-  // return response with user and token to frontend client
-  const { _id, name, role } = user;
-  return res.json({ token, user: { _id, name, email: user.email, role } });
 };
 
 exports.signout = async (req, res) => {

@@ -7,6 +7,7 @@ require("dotenv").config();
 
 // import routes
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user");
 
 // app
 const app = express();
@@ -24,6 +25,7 @@ app.use(cookieParser()); // Parse Cookie header and populate req.cookies with an
 
 // routes middleware
 app.use("/api", authRoutes);
+app.use("/api", userRoutes);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
