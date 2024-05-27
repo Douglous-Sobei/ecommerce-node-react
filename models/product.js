@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema;
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -7,6 +8,7 @@ const productSchema = new mongoose.Schema(
       trim: true,
       required: true,
       maxlength: 32,
+      unique: true,
     },
     description: {
       type: String,
@@ -39,8 +41,8 @@ const productSchema = new mongoose.Schema(
       contentType: String,
     },
     shipping: {
-      required: false,
       type: Boolean,
+      default: false, // Set a default value for the shipping field
     },
   },
   { timestamps: true }
