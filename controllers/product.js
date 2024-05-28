@@ -144,3 +144,29 @@ exports.updateProduct = async function (req, res) {
     res.status(400).json({ errors: errorHandler(error) });
   }
 };
+
+/**
+ * sell / arrivals
+ * by sell = /products?sortBy=sold&order=desc&limit=4
+ * by arrival = /products?sortBy=created_at&order=desc&limit=4
+ * if no params are sent, then all products are returned
+ */
+
+// get all products
+exports.listProduct = async (req, res) => {
+  try {
+    let order = req.query.order ? req.query.order : "asc";
+    let sortBy = req.query.sortBy ? req.query.sortBy : "_id";
+    let limit = req.query.limit ? parseInt(req.query.limit) : 6;
+    let products = await Product.find()
+      .select("-photo")
+      .populate("category")
+      .sort([[sortBy, order]])
+      .limit(limit);
+    res.json(products);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
