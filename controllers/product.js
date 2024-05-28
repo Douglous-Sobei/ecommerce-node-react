@@ -3,29 +3,7 @@ const fs = require("fs").promises; // Assuming fs.promises is used for file oper
 const Product = require("../models/product");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 
-exports.productById = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.productId);
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    req.product = product;
-    next();
-  } catch (error) {
-    return res.status(400).json({
-      error: errorHandler(error),
-    });
-  }
-};
-exports.read = async (req, res, next) => {
-  const product = req.product;
-  req.product.photo = undefined;
-  res.json(product);
-};
-
-// Parse form data
+// Helper function to parse the data
 const parseFormData = (req) => {
   return new Promise((resolve, reject) => {
     const form = new formidable.IncomingForm();
@@ -40,7 +18,7 @@ const parseFormData = (req) => {
   });
 };
 
-// Extract fields from form data
+// Helper function to extract the data from the form data
 const extractFields = (fields) => {
   return Object.fromEntries(
     Object.entries(fields).map(([key, value]) => [key, value[0]])
@@ -91,6 +69,31 @@ const handlePhoto = async (photos, product) => {
   product.photo.contentType = photo.mimetype;
 };
 
+// Controller functions
+exports.productById = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    req.product = product;
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      error: errorHandler(error),
+    });
+  }
+};
+
+// single product
+exports.read = async (req, res, next) => {
+  const product = req.product;
+  req.product.photo = undefined;
+  res.json(product);
+};
+
 // Create a new product
 exports.create = async (req, res) => {
   try {
@@ -106,6 +109,7 @@ exports.create = async (req, res) => {
   }
 };
 
+// remove product
 exports.removeProduct = async (req, res, next) => {
   try {
     const productId = req.params.productId;
@@ -118,5 +122,25 @@ exports.removeProduct = async (req, res, next) => {
     return res.status(400).json({
       error: errorHandler(err),
     });
+  }
+};
+
+// update the production
+exports.updateProduct = async function (req, res) {
+  try {
+    const { fields, files } = await parseFormData(req);
+    const extractedFields = extractFields(fields);
+    validateFields(extractedFields);
+    const productId = req.params.productId;
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { $set: extractedFields },
+      { new: true }
+    );
+    await handlePhoto(files.photo, product);
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } catch (error) {
+    res.status(400).json({ errors: errorHandler(error) });
   }
 };
