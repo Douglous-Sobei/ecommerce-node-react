@@ -1,12 +1,11 @@
-// user.js
-
 const express = require("express");
 const router = express.Router();
-
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
-const { userById, read, update } = require("../controllers/user");
-// Define a protected route
-// user.js
+const {
+  userById,
+  readUserProfile,
+  updateUserProfile,
+} = require("../controllers/user");
 
 // Define a protected route
 router.get("/secret/:userId", requireSignin, isAuth, isAdmin, (req, res) => {
@@ -15,10 +14,11 @@ router.get("/secret/:userId", requireSignin, isAuth, isAdmin, (req, res) => {
   });
 });
 
-router.get("/user/:userId", requireSignin, isAuth, read);
-router.put("/user/:userId", requireSignin, isAuth, update);
+// Routes for user profile
+router.get("/user/:userId", requireSignin, isAuth, readUserProfile);
+router.put("/user/:userId", requireSignin, isAuth, updateUserProfile);
 
-
+// Middleware to get user by ID
 router.param("userId", userById);
 
 module.exports = router;

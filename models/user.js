@@ -9,12 +9,15 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: true,
       maxlength: 32,
+      unique: true,
     },
     email: {
       type: String,
       trim: true,
       required: true,
       unique: true,
+      lowercase: true,
+      match: [/.+\@.+\..+/, "Please fill a valid email address"],
     },
     hashed_password: {
       type: String,
@@ -37,7 +40,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// virtual field
+// Virtual field for password
 userSchema
   .virtual("password")
   .set(function (password) {
