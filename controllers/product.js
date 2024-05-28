@@ -3,6 +3,28 @@ const fs = require("fs").promises; // Assuming fs.promises is used for file oper
 const Product = require("../models/product");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 
+exports.productById = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    req.product = product;
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      error: errorHandler(error),
+    });
+  }
+};
+exports.read = async (req, res, next) => {
+  const product = req.product;
+  req.product.photo = undefined;
+  res.json(product);
+};
+
 // Parse form data
 const parseFormData = (req) => {
   return new Promise((resolve, reject) => {
@@ -81,5 +103,20 @@ exports.create = async (req, res) => {
     res.json(savedProduct);
   } catch (error) {
     res.status(400).json({ errors: errorHandler(error) });
+  }
+};
+
+exports.removeProduct = async (req, res, next) => {
+  try {
+    const productId = req.params.productId;
+    await Product.findByIdAndDelete(productId);
+    res.json({
+      message: "Product deleted successfully",
+    });
+    next();
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
   }
 };
