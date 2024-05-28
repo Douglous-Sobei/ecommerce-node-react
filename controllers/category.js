@@ -53,3 +53,41 @@ exports.create = async (req, res) => {
     });
   }
 };
+
+// update the category
+exports.updateCategory = async (req, res) => {
+  try {
+    const category = req.category;
+    category.name = req.body.name;
+    const updatedCategory = await category.save();
+    res.json(updatedCategory);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
+
+// delete the category
+exports.removeCategory = async (req, res) => {
+  try {
+    await Category.findByIdAndDelete(req.params.categoryId);
+    res.json({ message: "Category deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
+
+// Get Categories
+exports.listCategory = async (req, res) => {
+  try {
+    const categories = await Category.find();
+    res.json(categories);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
