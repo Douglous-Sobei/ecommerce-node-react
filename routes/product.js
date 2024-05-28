@@ -8,7 +8,9 @@ const {
   read,
   removeProduct,
   updateProduct,
-  listProduct,
+  listProducts,
+  listRelated,
+  listBySearch,
 } = require("../controllers/product");
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
 
@@ -30,7 +32,8 @@ router.put(
   isAdmin,
   updateProduct
 );
-router.get("/products", listProduct);
+router.get("/products", listProducts);
+router.get("/products/related/:productId", listRelated);
 
 router.param("userId", userById);
 router.param("productId", productById);

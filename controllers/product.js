@@ -153,17 +153,108 @@ exports.updateProduct = async function (req, res) {
  */
 
 // get all products
-exports.listProduct = async (req, res) => {
+exports.listProducts = async (req, res) => {
   try {
-    let order = req.query.order ? req.query.order : "asc";
-    let sortBy = req.query.sortBy ? req.query.sortBy : "_id";
-    let limit = req.query.limit ? parseInt(req.query.limit) : 6;
-    let products = await Product.find()
+    const sortBy = req.query.sortBy || "createdAt";
+    const order = req.query.order || "asc";
+    const limit = parseInt(req.query.limit) || 10;
+
+    const products = await Product.find()
+      .select("-photo")
+      .populate("category")
+      .sort({ [sortBy]: order })
+      .limit(limit)
+      .exec();
+
+    if (!products) {
+      return res.status(404).json({ error: "Products not found" });
+    }
+
+    res.json(products);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
+
+/**
+ * It will find the products based on the req product category
+ * Other products with same category will be returned
+ */
+
+// Controller to list related products
+exports.listRelated = async (req, res) => {
+  try {
+    // Extract productId from request parameters
+    const productId = req.params.productId;
+
+    // Find the product by productId
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Find related products based on the same category
+    const relatedProducts = await Product.find({
+      _id: { $ne: product._id }, // Exclude the current product
+      category: product.category, // Match the same category as the current product
+    })
+      .limit(4) // Limit the number of related products to 4
+      .select("-photo") // Exclude the photo field
+      .populate("category", "_id name"); // Populate the category field
+
+    res.json(relatedProducts);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
+
+// Controller to list products by search criteria
+exports.listBySearch = async (req, res) => {
+  const order = req.body.order ? req.body.order : "desc";
+  const sortBy = req.body.sortBy ? req.body.sortBy : "_id";
+  const limit = req.body.limit ? parseInt(req.body.limit) : 100;
+  const skip = parseInt(req.body.skip);
+  const findArgs = {};
+
+  // Iterate over each filter in the request body
+  for (let key in req.body.filters) {
+    if (req.body.filters[key].length > 0) {
+      if (key === "price") {
+        // For price filter, use greater than and less than or equal to operators
+        findArgs[key] = {
+          $gte: req.body.filters[key][0],
+          $lte: req.body.filters[key][1],
+        };
+      } else {
+        // For other filters, directly assign the filter values
+        findArgs[key] = req.body.filters[key];
+      }
+    }
+  }
+
+  try {
+    // Execute the query with the specified filters, sorting, and pagination
+    const products = await Product.find(findArgs)
       .select("-photo")
       .populate("category")
       .sort([[sortBy, order]])
-      .limit(limit);
-    res.json(products);
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    if (!products) {
+      return res.status(404).json({ error: "Products not found" });
+    }
+
+    res.json({
+      size: products.length,
+      data: products,
+    });
   } catch (err) {
     return res.status(400).json({
       error: errorHandler(err),
