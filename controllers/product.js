@@ -276,3 +276,21 @@ exports.listBySearch = async (req, res) => {
     });
   }
 };
+
+// controller to get product photo
+
+exports.photo = async (req, res, next) => {
+  try {
+    const productId = req.params.productId;
+    const product = await Product.findById(productId).select("photo");
+    if (!product || !product.photo || !product.photo.data) {
+      return res.status(400).json({ error: "Photo not found" });
+    }
+    res.set("Content-Type", product.photo.contentType);
+    return res.send(product.photo.data);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
