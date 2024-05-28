@@ -213,6 +213,21 @@ exports.listRelated = async (req, res) => {
   }
 };
 
+// list categories
+exports.listCategories = async (req, res) => {
+  try {
+    const categories = await Product.distinct("category");
+    if (!categories) {
+      return res.status(404).json({ error: "Categories not found" });
+    }
+    res.json(categories);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};
+
 // Controller to list products by search criteria
 exports.listBySearch = async (req, res) => {
   const order = req.body.order ? req.body.order : "desc";
@@ -255,21 +270,6 @@ exports.listBySearch = async (req, res) => {
       size: products.length,
       data: products,
     });
-  } catch (err) {
-    return res.status(400).json({
-      error: errorHandler(err),
-    });
-  }
-};
-
-// list categories
-exports.listCategories = async (req, res) => {
-  try {
-    const categories = await Product.distinct("category");
-    if (!categories) {
-      return res.status(404).json({ error: "Categories not found" });
-    }
-    res.json(categories);
   } catch (err) {
     return res.status(400).json({
       error: errorHandler(err),
