@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
-const { userById } = require("../controllers/user");
+const { userById, read, update } = require("../controllers/user");
 // Define a protected route
 // user.js
 
@@ -15,9 +15,9 @@ router.get("/secret/:userId", requireSignin, isAuth, isAdmin, (req, res) => {
   });
 });
 
-router.param("userId", userById);
+router.get("/user/:userId", requireSignin, isAuth, read);
+router.put("/user/:userId", requireSignin, isAuth, update);
 
-module.exports = router;
 
 router.param("userId", userById);
 
