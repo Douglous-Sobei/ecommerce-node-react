@@ -261,3 +261,18 @@ exports.listBySearch = async (req, res) => {
     });
   }
 };
+
+// list categories
+exports.listCategories = async (req, res) => {
+  try {
+    const categories = await Product.distinct("category");
+    if (!categories) {
+      return res.status(404).json({ error: "Categories not found" });
+    }
+    res.json(categories);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler(err),
+    });
+  }
+};

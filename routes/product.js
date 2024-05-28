@@ -10,7 +10,7 @@ const {
   updateProduct,
   listProducts,
   listRelated,
-  listBySearch,
+  listCategories,
 } = require("../controllers/product");
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
 
@@ -34,6 +34,7 @@ router.put(
 );
 router.get("/products", listProducts);
 router.get("/products/related/:productId", listRelated);
+router.get("/products/categories", listCategories);
 
 router.param("userId", userById);
 router.param("productId", productById);
