@@ -59,7 +59,7 @@ const Signin = () => {
 
   const redirectUser = () => {
     if (redirectToReferrer) {
-      return <Redirect to="/" />;
+      return <Redirect to="/user/dashboard" />;
     }
   };
 
