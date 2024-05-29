@@ -3,37 +3,45 @@ const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 
+// controllers/auth.js
+
 exports.signup = async (req, res) => {
+  const { name, email, password } = req.body;
+
   try {
-    const { name, email, password } = req.body;
+    // Check if user with the same name already exists
+    let user = await User.findOne({ name });
+    if (user) {
+      return res
+        .status(400)
+        .json({ error: "User with this name already exists" });
+    }
+    // Check if user with the same email already exists
 
-    // Ensure email is in lowercase
-    const lowercaseEmail = email.toLowerCase();
+    user = await User.findOne({ email });
+    if (user) {
+      return res
+        .status(400)
+        .json({ error: "User with this Email already exists" });
+    }
+    // You can add additional validation checks here, such as password uniqueness, etc.
 
-    // check if this is the first user being created
-    const userCount = await User.countDocuments();
-    const role = userCount === 0 ? 1 : 0;
+    // Create new user
+    user = new User({ name, email, password });
 
-    const user = new User({
-      name,
-      email: lowercaseEmail,
-      password,
-      role, // Set the role based on user count
-    });
-
-    // save user to db
+    // Save user to database
     await user.save();
 
-    // Remove sensitive information from the request body
-    user.salt = undefined;
+    // Remove sensitive information from response
     user.hashed_password = undefined;
+    user.salt = undefined;
 
-    // send response to user
-    res.status(201).json({ user });
+    // Send success response
+    res.json({ user });
   } catch (err) {
+    // console.error(err.message);
     res.status(400).json({
-      status: "fail",
-      message: errorHandler(err),
+      error: errorHandler(err),
     });
   }
 };

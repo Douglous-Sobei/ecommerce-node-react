@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import Layout from "../core/Layout";
-import axios from "axios";
-
 import { API } from "../Config";
+import { Link } from "react-router-dom";
 
 const Signup = () => {
-  const [values, setValues] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
@@ -13,22 +12,28 @@ const Signup = () => {
     success: false,
   });
 
-  const { name, email, password, success, error } = values;
+  const { name, email, password, error, success } = formData;
 
   const handleChange = (name) => (event) => {
-    setValues({ ...values, error: false, [name]: event.target.value });
+    setFormData({ ...formData, error: false, [name]: event.target.value });
   };
 
-  const signup = (user) => {
-    // console.log({ name, email, password });
-    axios
-      .post(`${API}/signup`, { name, email, password })
-      .then((response) => {
-        if (response.data.error) {
-          setValues({ ...values, error: response.data.error, success: false });
+  const signup = async () => {
+    return fetch(`${API}/signup`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          setFormData({ ...formData, error: data.error, success: false });
         } else {
-          setValues({
-            ...values,
+          setFormData({
+            ...formData,
             name: "",
             email: "",
             password: "",
@@ -37,56 +42,80 @@ const Signup = () => {
           });
         }
       })
-      .catch((error) => console.log(error));
+      .catch((err) => console.error(err));
   };
 
-  const clickSubmit = (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    signup({ name, email, password });
+    setFormData({ ...formData, error: false });
+    signup();
   };
 
-  const signUpForm = () => {
-    return (
-      <form>
-        <div className="form-group">
-          <label className="text-muted">Name</label>
-          <input
-            onChange={handleChange("name")}
-            type="text"
-            className="form-control"
-          />
-        </div>
-        <div className="form-group">
-          <label className="text-muted">Email</label>
-          <input
-            onChange={handleChange("email")}
-            type="email"
-            className="form-control"
-          />
-        </div>
-        <div className="form-group">
-          <label className="text-muted">Password</label>
-          <input
-            onChange={handleChange("password")}
-            type="password"
-            className="form-control"
-          />
-        </div>
-        <button onClick={clickSubmit} className="btn btn-primary">
-          Submit
-        </button>
-      </form>
-    );
-  };
+  const showError = () => (
+    <div
+      className="alert alert-danger"
+      style={{ display: error ? "" : "none" }}
+    >
+      {error}
+    </div>
+  );
+
+  const showSuccess = () => (
+    <div
+      className="alert alert-success"
+      style={{ display: success ? "" : "none" }}
+    >
+      New account was created. Please <Link to="/signin">Sign in</Link>.
+    </div>
+  );
+
+  const signUpForm = () => (
+    <form onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label className="text-muted">Name</label>
+        <input
+          onChange={handleChange("name")}
+          type="text"
+          className="form-control"
+          placeholder="Type your name"
+          value={name}
+        />
+      </div>
+      <div className="form-group">
+        <label className="text-muted">Email</label>
+        <input
+          onChange={handleChange("email")}
+          type="email"
+          className="form-control"
+          placeholder="Type your email"
+          value={email}
+        />
+      </div>
+      <div className="form-group">
+        <label className="text-muted">Password</label>
+        <input
+          onChange={handleChange("password")}
+          type="password"
+          className="form-control"
+          placeholder="Type your password"
+          value={password}
+        />
+      </div>
+      <button type="submit" className="btn btn-block btn-primary">
+        Submit
+      </button>
+    </form>
+  );
+
   return (
     <Layout
       title="Signup Page"
       description="Node React E-commerce App"
       className="container col-md-8 offset-md-2"
     >
+      {showSuccess()}
+      {showError()}
       {signUpForm()}
-
-      {JSON.stringify(values)}
     </Layout>
   );
 };
