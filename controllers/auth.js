@@ -50,6 +50,13 @@ exports.signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if email or password is empty
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "Email and password are required.",
+      });
+    }
+
     // Ensure email is in lowercase
     const normalizedEmail = email.toLowerCase();
 
