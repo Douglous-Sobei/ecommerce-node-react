@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Layout from "../core/Layout";
-import { API } from "../Config";
+import { signup } from "../auth"; // Import the signup function from the auth folder
 import { Link } from "react-router-dom";
 
 const Signup = () => {
@@ -18,16 +18,12 @@ const Signup = () => {
     setFormData({ ...formData, error: false, [name]: event.target.value });
   };
 
-  const signup = async () => {
-    return fetch(`${API}/signup`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, password }),
-    })
-      .then((response) => response.json())
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setFormData({ ...formData, error: false });
+
+    // Call the signup function from the auth folder
+    signup({ name, email, password })
       .then((data) => {
         if (data.error) {
           setFormData({ ...formData, error: data.error, success: false });
@@ -43,12 +39,6 @@ const Signup = () => {
         }
       })
       .catch((err) => console.error(err));
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setFormData({ ...formData, error: false });
-    signup();
   };
 
   const showError = () => (
