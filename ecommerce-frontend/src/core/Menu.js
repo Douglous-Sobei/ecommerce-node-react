@@ -1,38 +1,30 @@
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
 
-const isActive = (history, path) => {
-  if (history.location.pathname === path) {
-    return { color: "#ff9900" };
-  } else {
-    return { color: "#ffffff" };
-  }
-};
-
 const Menu = ({ history }) => {
+  const isActive = (path) => {
+    if (history.location.pathname === path) {
+      return { color: "#007bff" }; // Change the color to a shade of blue
+    } else {
+      return { color: "#ffffff" };
+    }
+  };
+
   return (
     <div>
-      <ul className="nav nav-tabs bg-primary">
+      <ul className="nav nav-tabs bg-dark">
         <li className="nav-item">
-          <Link className="nav-link" style={isActive(history, "/")} to="/">
+          <Link className="nav-link" style={isActive("/")} to="/">
             Home
           </Link>
         </li>
         <li className="nav-item">
-          <Link
-            className="nav-link"
-            style={isActive(history, "/signin")}
-            to="/signin"
-          >
+          <Link className="nav-link" style={isActive("/signin")} to="/signin">
             Signin
           </Link>
         </li>
         <li className="nav-item">
-          <Link
-            className="nav-link"
-            style={isActive(history, "/signup")}
-            to="/signup"
-          >
+          <Link className="nav-link" style={isActive("/signup")} to="/signup">
             Signup
           </Link>
         </li>

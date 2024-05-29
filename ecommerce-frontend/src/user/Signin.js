@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Layout from "../core/Layout";
-import { signin } from "../auth";
+import { authenticate, signin } from "../auth";
 import { Redirect } from "react-router-dom";
 
 const Signin = () => {
@@ -30,8 +30,12 @@ const Signin = () => {
           setFormData({ ...formData, error: data.error, loading: false });
         } else {
           // Authenticate user and redirect
-          // You can implement authentication logic here (e.g., set user token in localStorage)
-          setFormData({ ...formData, redirectToReferrer: true });
+          authenticate(data, () => {
+            setFormData({
+              ...formData,
+              redirectToReferrer: true,
+            });
+          });
         }
       })
       .catch((err) => console.error(err));

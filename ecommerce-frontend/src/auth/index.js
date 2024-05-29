@@ -27,3 +27,10 @@ export const signin = async (user) => {
     .then((response) => response.json())
     .catch((err) => console.error(err));
 };
+
+export const authenticate = (data, next) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("jwt", JSON.stringify(data));
+    next();
+  }
+};
