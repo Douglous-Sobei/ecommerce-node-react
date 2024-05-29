@@ -183,10 +183,6 @@ exports.listProducts = async (req, res) => {
   }
 };
 
-/**
- * Controller to list related products
- * It lists products from the same category as the requested product
- */
 exports.listRelated = async (req, res) => {
   try {
     // Extract productId from request parameters
