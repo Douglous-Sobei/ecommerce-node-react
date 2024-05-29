@@ -16,18 +16,21 @@ exports.signup = async (req, res) => {
         .status(400)
         .json({ error: "User with this name already exists" });
     }
-    // Check if user with the same email already exists
 
+    // Check if user with the same email already exists
     user = await User.findOne({ email });
     if (user) {
       return res
         .status(400)
-        .json({ error: "User with this Email already exists" });
+        .json({ error: "User with this email already exists" });
     }
-    // You can add additional validation checks here, such as password uniqueness, etc.
+
+    // Determine role for the new user
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 1 : 0;
 
     // Create new user
-    user = new User({ name, email, password });
+    user = new User({ name, email, password, role });
 
     // Save user to database
     await user.save();
@@ -39,58 +42,40 @@ exports.signup = async (req, res) => {
     // Send success response
     res.json({ user });
   } catch (err) {
-    // console.error(err.message);
-    res.status(400).json({
-      error: errorHandler(err),
-    });
+    res.status(400).json({ error: errorHandler(err) });
   }
 };
 
 exports.signin = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
   try {
-    const { email, password } = req.body;
-
-    // Check if email or password is empty
-    if (!email || !password) {
-      return res.status(400).json({
-        error: "Email and password are required.",
-      });
-    }
-
-    // Ensure email is in lowercase
     const normalizedEmail = email.toLowerCase();
-
-    // Find user in the database by email
     const user = await User.findOne({ email: normalizedEmail });
 
-    // If user not found, return error
     if (!user) {
       return res.status(400).json({
         error: "User with that email does not exist. Please sign up.",
       });
     }
 
-    // If password does not match, return error
     if (!user.authenticate(password)) {
       return res
         .status(401)
         .json({ error: "Email and password do not match." });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-    // Set token in cookie for future requests
     res.cookie("t", token, { expire: new Date() + 9999 });
 
-    // Omit sensitive fields from user object
     const { _id, name, role } = user;
-    // Respond with token and user details (excluding sensitive fields)
     res.json({ token, user: { _id, email: normalizedEmail, name, role } });
   } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: errorHandler(err),
-    });
+    res.status(400).json({ error: errorHandler(err) });
   }
 };
 

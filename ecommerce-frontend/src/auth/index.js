@@ -1,22 +1,7 @@
 import { API } from "../Config";
 
-export const signup = async (data) => {
-  return fetch("/api/signup", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .catch((err) => console.log(err));
-};
-
-export const signin = async (user) => {
-  return fetch(`${API}/signin`, {
+export const signup = async (user) => {
+  return fetch(`${API}/signup`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -26,6 +11,23 @@ export const signin = async (user) => {
   })
     .then((response) => response.json())
     .catch((err) => console.error(err));
+};
+
+export const signin = (user) => {
+  return fetch(`${API}/signin`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(user),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 export const authenticate = (data, next) => {

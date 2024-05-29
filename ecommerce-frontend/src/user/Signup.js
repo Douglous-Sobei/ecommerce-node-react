@@ -1,10 +1,11 @@
+// In src/user/Signup.js
 import React, { useState } from "react";
-import Layout from "../core/Layout";
-import { signup } from "../auth"; // Import the signup function from the auth folder
 import { Link } from "react-router-dom";
+import { signup } from "../auth";
+import Layout from "../core/Layout";
 
 const Signup = () => {
-  const [formData, setFormData] = useState({
+  const [values, setValues] = useState({
     name: "",
     email: "",
     password: "",
@@ -12,33 +13,29 @@ const Signup = () => {
     success: false,
   });
 
-  const { name, email, password, error, success } = formData;
+  const { name, email, password, success, error } = values;
 
   const handleChange = (name) => (event) => {
-    setFormData({ ...formData, error: false, [name]: event.target.value });
+    setValues({ ...values, error: false, [name]: event.target.value });
   };
 
-  const handleSubmit = (event) => {
+  const clickSubmit = (event) => {
     event.preventDefault();
-    setFormData({ ...formData, error: false });
-
-    // Call the signup function from the auth folder
-    signup({ name, email, password })
-      .then((data) => {
-        if (data.error) {
-          setFormData({ ...formData, error: data.error, success: false });
-        } else {
-          setFormData({
-            ...formData,
-            name: "",
-            email: "",
-            password: "",
-            error: "",
-            success: true,
-          });
-        }
-      })
-      .catch((err) => console.error(err));
+    setValues({ ...values, error: false });
+    signup({ name, email, password }).then((data) => {
+      if (data.error) {
+        setValues({ ...values, error: data.error, success: false });
+      } else {
+        setValues({
+          ...values,
+          name: "",
+          email: "",
+          password: "",
+          error: "",
+          success: true,
+        });
+      }
+    });
   };
 
   const showError = () => (
@@ -52,22 +49,21 @@ const Signup = () => {
 
   const showSuccess = () => (
     <div
-      className="alert alert-success"
+      className="alert alert-info"
       style={{ display: success ? "" : "none" }}
     >
-      New account was created. Please <Link to="/signin">Sign in</Link>.
+      New account is created. Please <Link to="/signin">Signin</Link>.
     </div>
   );
 
   const signUpForm = () => (
-    <form onSubmit={handleSubmit}>
+    <form>
       <div className="form-group">
         <label className="text-muted">Name</label>
         <input
           onChange={handleChange("name")}
           type="text"
           className="form-control"
-          placeholder="Type your name"
           value={name}
         />
       </div>
@@ -77,7 +73,6 @@ const Signup = () => {
           onChange={handleChange("email")}
           type="email"
           className="form-control"
-          placeholder="Type your email"
           value={email}
         />
       </div>
@@ -87,11 +82,10 @@ const Signup = () => {
           onChange={handleChange("password")}
           type="password"
           className="form-control"
-          placeholder="Type your password"
           value={password}
         />
       </div>
-      <button type="submit" className="btn btn-block btn-primary">
+      <button onClick={clickSubmit} className="btn btn-primary">
         Submit
       </button>
     </form>
@@ -99,8 +93,8 @@ const Signup = () => {
 
   return (
     <Layout
-      title="Signup Page"
-      description="Node React E-commerce App"
+      title="Signup"
+      description="Signup to Node React E-commerce App"
       className="container col-md-8 offset-md-2"
     >
       {showSuccess()}
