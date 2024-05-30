@@ -9,3 +9,13 @@ export const getProducts = async (sortBy) => {
     })
     .catch((err) => console.log(err));
 };
+
+export const getCategories = async () => {
+  return fetch(`${API}/categories`, {
+    method: "GET",
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .catch((err) => console.log(err));
+};
