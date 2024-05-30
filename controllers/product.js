@@ -4,8 +4,7 @@ const fs = require("fs").promises; // File system promises
 const Product = require("../models/product"); // Product model
 const { errorHandler } = require("../helpers/dbErrorHandler"); // Error handling helper
 
-// Helper function to parse the form data
-// Returns a promise that resolves to an object containing the fields and files
+/// Helper function to parse the form data
 const parseFormData = (req) => {
   return new Promise((resolve, reject) => {
     const form = new formidable.IncomingForm();
@@ -21,7 +20,6 @@ const parseFormData = (req) => {
 };
 
 // Helper function to extract the fields from the form data
-// Returns an object with the fields extracted from the form data
 const extractFields = (fields) => {
   return Object.fromEntries(
     Object.entries(fields).map(([key, value]) => [key, value[0]])
@@ -29,7 +27,6 @@ const extractFields = (fields) => {
 };
 
 // Validate product fields
-// Throws an error if any required fields are missing
 const validateFields = ({
   name,
   description,
@@ -63,10 +60,8 @@ const validateFields = ({
 };
 
 // Handle product photo
-// Reads the photo file and sets the data and content type of the product
-const handlePhoto = async (photos, product) => {
-  if (!photos || !photos[0]) return;
-  const photo = photos[0];
+const handlePhoto = async (photo, product) => {
+  if (!photo) return;
   if (!photo.filepath) throw new Error("File path is not defined");
   if (photo.size > 1000000)
     throw new Error("Image should be less than 1mb in size");
@@ -101,18 +96,24 @@ exports.read = async (req, res, next) => {
   res.json(product);
 };
 
-// Controller to create a new product
+/// Controller to create a new product
 exports.create = async (req, res) => {
   try {
     const { fields, files } = await parseFormData(req);
     const extractedFields = extractFields(fields);
     validateFields(extractedFields);
     const product = new Product(extractedFields);
-    await handlePhoto(files.photo, product);
+    await handlePhoto(files.photo[0], product);
     const savedProduct = await product.save();
     res.json(savedProduct);
   } catch (error) {
-    res.status(400).json({ errors: errorHandler(error) });
+    if (typeof error === "object" && !Array.isArray(error) && error !== null) {
+      // If the error is an object, it's a validation error
+      res.status(400).json({ errors: error });
+    } else {
+      // Otherwise, it's a different kind of error
+      res.status(400).json({ error: errorHandler(error) });
+    }
   }
 };
 

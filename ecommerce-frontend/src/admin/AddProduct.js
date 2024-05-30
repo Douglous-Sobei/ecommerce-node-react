@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Layout from "../core/Layout";
 import { isAuthenticated } from "../auth";
-import { Link } from "react-router-dom";
-import { createProduct } from "./ApiAdmin";
+import { createProduct, getCategories } from "./ApiAdmin";
+
 const AddProduct = () => {
   const [values, setValues] = useState({
     name: "",
@@ -12,12 +12,11 @@ const AddProduct = () => {
     category: "",
     shipping: "",
     quantity: "",
-    photo: "",
     loading: false,
     error: "",
     createdProduct: "",
     redirectToProfile: false,
-    formData: "",
+    formData: new FormData(),
   });
 
   const { user, token } = isAuthenticated();
@@ -33,25 +32,34 @@ const AddProduct = () => {
     loading,
     error,
     createdProduct,
-    redirectToProfile,
     formData,
   } = values;
 
+  const init = useCallback(async () => {
+    const data = await getCategories();
+    if (data) {
+      setValues((prevValues) => ({ ...prevValues, categories: data }));
+    }
+  }, []);
+
   useEffect(() => {
-    setValues((prevValues) => ({ ...prevValues, formData: new FormData() }));
-  }, [values]);
+    init();
+  }, [init]);
 
   const handleChange = (name) => (event) => {
     const value = name === "photo" ? event.target.files[0] : event.target.value;
     formData.set(name, value);
-    setValues({ ...values, [name]: value });
+    setValues({ ...values, [name]: value, error: "" });
   };
+
   const clickSubmit = (event) => {
     event.preventDefault();
-    setValues({ ...values, error: "", loading: true });
+    setValues({ ...values, loading: true });
     createProduct(user._id, token, formData).then((data) => {
-      if (data.error) {
-        setValues({ ...values, error: data.error });
+      if (data.errors) {
+        setValues({ ...values, error: data.errors, loading: false });
+      } else if (data.error) {
+        setValues({ ...values, error: data.error, loading: false });
       } else {
         setValues({
           ...values,
@@ -62,6 +70,7 @@ const AddProduct = () => {
           quantity: "",
           loading: false,
           createdProduct: data.name,
+          error: "",
         });
       }
     });
@@ -108,7 +117,11 @@ const AddProduct = () => {
       </div>
       <div className="form-group">
         <label className="text-muted">Category</label>
-        <select onChange={handleChange("category")} className="form-control">
+        <select
+          onChange={handleChange("category")}
+          className="form-control"
+          value={category}
+        >
           <option>Please select</option>
           {categories &&
             categories.map((c, i) => (
@@ -120,8 +133,12 @@ const AddProduct = () => {
       </div>
       <div className="form-group">
         <label className="text-muted">Shipping</label>
-        <select onChange={handleChange("shipping")} className="form-control">
-          <option>Please select</option>
+        <select
+          onChange={handleChange("shipping")}
+          className="form-control"
+          value={shipping}
+        >
+          <option value="">Please select</option>
           <option value="0">No</option>
           <option value="1">Yes</option>
         </select>
@@ -139,6 +156,31 @@ const AddProduct = () => {
     </form>
   );
 
+  const showError = () => (
+    <div
+      className="alert alert-danger"
+      style={{ display: error ? "" : "none" }}
+    >
+      {typeof error === "string" ? error : Object.values(error).join(", ")}
+    </div>
+  );
+
+  const showSuccess = () => (
+    <div
+      className="alert alert-info"
+      style={{ display: createdProduct ? "" : "none" }}
+    >
+      <h2>{`${createdProduct}`} is created!</h2>
+    </div>
+  );
+
+  const showLoading = () =>
+    loading && (
+      <div className="alert alert-success">
+        <h2>Loading...</h2>
+      </div>
+    );
+
   return (
     <Layout
       title="Add New Product"
@@ -146,9 +188,15 @@ const AddProduct = () => {
       className="container col-md-8 offset-md-2"
     >
       <div className="row">
-        <div className="col-md-8 offset-md-2">{newPostForm()}</div>
+        <div className="col-md-8 offset-md-2">
+          {showLoading()}
+          {showError()}
+          {showSuccess()}
+          {newPostForm()}
+        </div>
       </div>
     </Layout>
   );
 };
+
 export default AddProduct;
