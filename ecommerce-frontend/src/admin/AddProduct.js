@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Layout from "../core/Layout";
 import { isAuthenticated } from "../auth";
 import { createProduct, getCategories } from "./ApiAdmin";
+import { Link } from "react-router-dom";
 
 const AddProduct = () => {
   const [values, setValues] = useState({
@@ -181,6 +182,13 @@ const AddProduct = () => {
       </div>
     );
 
+  const goBack = () => (
+    <div className="mt-5">
+      <Link to="/admin/dashboard" className="text-warning">
+        Back to Dashboard
+      </Link>
+    </div>
+  );
   return (
     <Layout
       title="Add New Product"
@@ -193,6 +201,7 @@ const AddProduct = () => {
           {showError()}
           {showSuccess()}
           {newPostForm()}
+          {goBack()}
         </div>
       </div>
     </Layout>
