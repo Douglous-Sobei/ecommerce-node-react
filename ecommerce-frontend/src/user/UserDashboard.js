@@ -3,7 +3,7 @@ import { isAuthenticated } from "../auth";
 import Layout from "../core/Layout";
 import { Link } from "react-router-dom";
 
-const UserDashboard = () => {
+const Dashboard = () => {
   const {
     user: { _id, name, email, role },
   } = isAuthenticated();
@@ -72,4 +72,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard;
+export default Dashboard;
