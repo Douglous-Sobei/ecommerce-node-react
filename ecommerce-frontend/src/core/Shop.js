@@ -5,6 +5,9 @@ import { getCategories } from "./ApiCore";
 import Checkbox from "./Checkbox";
 
 const Shop = () => {
+  const [myFilters, setMyFilters] = useState({
+    filters: { category: [], price: [] },
+  });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
 
@@ -23,8 +26,12 @@ const Shop = () => {
     init();
   }, []);
 
-  const handleFilters = (filters) => {
-    console.log("SHOP", filters, "category");
+  const handleFilters = (filters, filterBy) => {
+    // console.log("SHOP", filters, "category");
+    const newFilters = { ...myFilters };
+    newFilters.filters[filterBy] = filters;
+
+    setMyFilters(newFilters);
   };
 
   return (
@@ -38,10 +45,13 @@ const Shop = () => {
         <div className="col-4">
           <h4>Filter by categories</h4>
           <ul>
-            <Checkbox categories={categories} handleFilters={handleFilters} />
+            <Checkbox
+              categories={categories}
+              handleFilters={(filters) => handleFilters(filters, "category")}
+            />
           </ul>
         </div>
-        <div className="col-8">Right sidebar</div>
+        <div className="col-8">{JSON.stringify(myFilters)}</div>
       </div>
     </Layout>
   );
