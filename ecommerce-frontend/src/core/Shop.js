@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../core/Layout";
 import Card from "./Card";
-import { ApiCore, getCategories } from "./ApiCore";
+import { getCategories } from "./ApiCore";
 import Checkbox from "./Checkbox";
 
 const Shop = () => {
@@ -23,6 +23,10 @@ const Shop = () => {
     init();
   }, []);
 
+  const handleFilters = (filters) => {
+    console.log("SHOP", filters, "category");
+  };
+
   return (
     <Layout
       title="Shop Page"
@@ -34,7 +38,7 @@ const Shop = () => {
         <div className="col-4">
           <h4>Filter by categories</h4>
           <ul>
-            <Checkbox categories={categories} />
+            <Checkbox categories={categories} handleFilters={handleFilters} />
           </ul>
         </div>
         <div className="col-8">Right sidebar</div>
@@ -42,4 +46,5 @@ const Shop = () => {
     </Layout>
   );
 };
+
 export default Shop;
