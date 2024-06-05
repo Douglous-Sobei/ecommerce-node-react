@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../core/Layout";
 import Card from "./Card";
-import { ApiCore, getCategories } from "../core/ApiCore";
+import { ApiCore, getCategories } from "./ApiCore";
+import Checkbox from "./Checkbox";
 
 const Shop = () => {
   const [categories, setCategories] = useState([]);
@@ -30,11 +31,15 @@ const Shop = () => {
     >
       {error && <div>{error.message}</div>}
       <div className="row">
-        <div className="col-4">{JSON.stringify(categories)}</div>
+        <div className="col-4">
+          <h4>Filter by categories</h4>
+          <ul>
+            <Checkbox categories={categories} />
+          </ul>
+        </div>
         <div className="col-8">Right sidebar</div>
       </div>
     </Layout>
   );
 };
 export default Shop;
-
